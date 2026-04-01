@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - library-network
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGO_URI=mongodb://mongodb:27017/userdb
+      - JWT_SECRET=librarysecretkey123
+    depends_on:
+      - mongodb
+    networks:
+      - library-network
+
+  book-service:
+    build: ./book-service
+    container_name: book-service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - MONGO_URI=mongodb://mongodb:27017/bookdb
+    depends_on:
+      - mongodb
+    networks:
+      - library-network
+
+  rental-service:
+    build: ./rental-service
+    container_name: rental-service
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MONGO_URI=mongodb://mongodb:27017/rentaldb
+      - BOOK_SERVICE_URL=http://book-service:5002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:5004
+    depends_on:
+      - mongodb
+      - book-service
+      - notification-service
+    networks:
+      - library-network
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - EMAIL_USER=muzzumustafa6263@gmail.com
+      - EMAIL_PASS=qsgeyuguakjbalrl
+    networks:
+      - library-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - JWT_SECRET=librarysecretkey123
+    depends_on:
+      - user-service
+      - book-service
+      - rental-service
+    networks:
+      - library-network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway
+    networks:
+      - library-network
+
+volumes:
+  mongo_data:
+
+networks:
+  library-network:
+    driver: bridge
