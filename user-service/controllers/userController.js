@@ -21,19 +21,45 @@ const generateRefreshToken = (user) => {
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const role = 'user';
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Validate registration details
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: 'please fill credentials to register'
+      });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword, role });
+    const role = 'user';
 
-    res.status(201).json({ message: 'User registered successfully', user });
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: 'User already exists'
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role
+    });
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      user
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
 
@@ -42,10 +68,20 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: 'Invalid credentials'
+      });
+    }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
@@ -60,23 +96,37 @@ const login = async (req, res) => {
       refreshToken,
       user
     });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
 
 const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(401).json({ message: 'Refresh token required' });
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        message: 'Refresh token required'
+      });
+    }
 
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET
+    );
 
     // Check if refresh token matches in DB
     const user = await User.findById(decoded.id);
+
     if (!user || user.refreshToken !== refreshToken) {
-      return res.status(403).json({ message: 'Invalid refresh token' });
+      return res.status(403).json({
+        message: 'Invalid refresh token'
+      });
     }
 
     // Generate new access token
@@ -86,23 +136,39 @@ const refreshToken = async (req, res) => {
       message: 'Token refreshed',
       token: newAccessToken
     });
+
   } catch (error) {
-    res.status(403).json({ message: 'Invalid or expired refresh token' });
+    res.status(403).json({
+      message: 'Invalid or expired refresh token'
+    });
   }
 };
 
 const logout = async (req, res) => {
   try {
     const { refreshToken } = req.body;
+
     const user = await User.findOne({ refreshToken });
+
     if (user) {
       user.refreshToken = null;
       await user.save();
     }
-    res.status(200).json({ message: 'Logged out successfully' });
+
+    res.status(200).json({
+      message: 'Logged out successfully'
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
 
-module.exports = { register, login, refreshToken, logout };
+module.exports = {
+  register,
+  login,
+  refreshToken,
+  logout
+};

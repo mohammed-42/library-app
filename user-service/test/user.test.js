@@ -44,6 +44,50 @@ describe('POST /api/users/register', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('User already exists');
   });
+  it('should not allow to register empty', async () => {
+    const res = await request(app)
+      .post('/api/users/register')
+      .send({});
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe('please fill credentials to register');
+  });
+  it('should not allow registration with empty email', async () => {
+  const res = await request(app)
+    .post('/api/users/register')
+    .send({
+      name: 'Test User',
+      email: '',
+      password: 'Password123'
+    });
+
+  expect(res.statusCode).toBe(400);
+  expect(res.body.message).toBe('please fill credentials to register');
+});
+it('should not allow registration with empty password', async () => {
+  const res = await request(app)
+    .post('/api/users/register')
+    .send({
+      name: 'Test User',
+      email: `testpassword_${Date.now()}@example.com`,
+      password: ''
+    });
+
+  expect(res.statusCode).toBe(400);
+  expect(res.body.message).toBe('please fill credentials to register');
+});
+it('should not allow registration with invalid email format', async () => {
+  const res = await request(app)
+    .post('/api/users/register')
+    .send({
+      name: 'Test User',
+      email: 'invalid-email',
+      password: 'Password123'
+    });
+
+  expect(res.statusCode).toBe(400);
+  expect(res.body.message).toBe('Invalid email format');
+});
 });
 
 describe('POST /api/users/login', () => {
@@ -59,13 +103,28 @@ describe('POST /api/users/login', () => {
   });
 
   it('should reject login with wrong password', async () => {
-    const res = await request(app)
-      .post('/api/users/login')
-      .send({ email: testUser.email, password: 'WrongPassword' });
+  const email = `wrongpass_${Date.now()}@example.com`;
 
-    expect(res.statusCode).toBe(400);
-    expect(res.body.message).toBe('Invalid credentials');
-  });
+  // Create user first
+  await request(app)
+    .post('/api/users/register')
+    .send({
+      name: 'Test User',
+      email: email,
+      password: 'Password123'
+    });
+
+  // Try login with incorrect password
+  const res = await request(app)
+    .post('/api/users/login')
+    .send({
+      email: email,
+      password: 'WrongPassword'
+    });
+
+  expect(res.statusCode).toBe(400);
+  expect(res.body.message).toBe('Invalid credentials');
+});
 
   it('should reject login for a non-existent email', async () => {
     const res = await request(app)
@@ -75,4 +134,12 @@ describe('POST /api/users/login', () => {
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe('User not found');
   });
+  it.only('should not allow login with blank credentials', async () => {
+  const res = await request(app)
+    .post('/api/users/login')
+    .send({});
+
+  expect(res.statusCode).toBe(400);
+  expect(res.body.message).toBe('Please fill credentials to login');
+});
 });

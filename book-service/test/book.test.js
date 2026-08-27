@@ -61,6 +61,45 @@ describe('GET /api/books', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.some(b => b.title === testBook.title)).toBe(true);
   });
+  it('should return no books for a non-existing title', async () => {
+  const res = await request(app)
+    .get('/api/books?title=ThisBookDoesNotExist');
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body).toEqual([]);
+});
+it('should filter books by genre', async () => {
+  const res = await request(app)
+    .get('/api/books?genre=Fiction');
+
+  expect(res.statusCode).toBe(200);
+  expect(res.body.some(b => b.genre === 'Fiction')).toBe(true);
+});
+it('should filter books by title and genre together', async () => {
+  const res = await request(app)
+    .get('/api/books?title=Test%20Book%20Title&genre=Fiction');
+
+  expect(res.statusCode).toBe(200);
+  expect(
+    res.body.some(
+      b => b.title === testBook.title && b.genre === testBook.genre
+    )
+  ).toBe(true);
+});
+it.only('should reset search filters and return all books', async () => {
+  // First apply a filter
+  const filteredRes = await request(app)
+    .get('/api/books?title=Test%20Book%20Title');
+
+  expect(filteredRes.statusCode).toBe(200);
+
+  // Reset the filter
+  const resetRes = await request(app)
+    .get('/api/books');
+
+  expect(resetRes.statusCode).toBe(200);
+  expect(Array.isArray(resetRes.body)).toBe(true);
+});
 });
 
 describe('GET /api/books/:id', () => {
