@@ -19,7 +19,7 @@ services:
     environment:
       - PORT=5001
       - MONGO_URI=mongodb://mongodb:27017/userdb
-      - JWT_SECRET=
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - mongodb
     networks:
@@ -62,8 +62,8 @@ services:
       - "5004:5004"
     environment:
       - PORT=5004
-      - EMAIL_USER=muzzumustafa6263@gmail.com
-      - EMAIL_PASS=
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
     networks:
       - library-network
 
@@ -74,7 +74,7 @@ services:
       - "5000:5000"
     environment:
       - PORT=5000
-      - JWT_SECRET=
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - user-service
       - book-service
