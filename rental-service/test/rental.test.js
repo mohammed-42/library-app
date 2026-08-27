@@ -7,8 +7,8 @@ dotenv.config();
 const app = require('../app');
 const Rental = require('../models/rentalModel');
 
-const TEST_MONGO_URI = 'mongodb://localhost:27018/rentaldb';
-const BOOK_SERVICE_URL = process.env.BOOK_SERVICE_URL || 'http://localhost:5002';
+const TEST_MONGO_URI = 'mongodb://127.0.0.1:27018/rentaldb';
+const BOOK_SERVICE_URL = process.env.BOOK_SERVICE_URL || 'http://127.0.0.1:5002';
 
 let testBookId;
 let testRentalId;
@@ -65,6 +65,7 @@ describe('POST /api/rentals/borrow', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe('No copies available');
   });
+ 
 });
 
 describe('GET /api/rentals', () => {
@@ -114,5 +115,20 @@ describe('PUT /api/rentals/return/:id', () => {
 
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe('Rental not found');
+  });
+});
+describe('POST /api/rentals/borrow - additional case', () => {
+  it.only('TC19 - should borrow an available book for 3 days', async () => {
+    const res = await request(app)
+      .post('/api/rentals/borrow')
+      .send({
+        userId: 'test-user-003',
+        userName: 'Test User',
+        email: 'test@example.com',
+        bookId: testBookId,
+        days: 3
+      });
+
+    expect(res.statusCode).toBe(201);
   });
 });
