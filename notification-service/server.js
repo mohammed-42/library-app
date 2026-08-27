@@ -1,14 +1,9 @@
-const express = require('express');
 const dotenv = require('dotenv');
-const cors = require('cors');
 const amqp = require('amqplib');
 const { sendBorrowEmail } = require('./services/emailService');
+const app = require('./app');
 
 dotenv.config();
-
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://rabbitmq';
 
@@ -44,10 +39,6 @@ const connectQueue = async () => {
     setTimeout(connectQueue, 5000);
   }
 };
-
-app.get('/', (req, res) => {
-  res.send('Notification Service is running');
-});
 
 const PORT = process.env.PORT || 5004;
 app.listen(PORT, () => {
