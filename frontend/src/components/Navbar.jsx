@@ -1,18 +1,18 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { logoutUser } from '../services/api';
 
-function Navbar() {
+function Navbar({ user, onLogout }) {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
 
   const logout = async () => {
-  const refreshToken = localStorage.getItem('refreshToken');
-  try { await logoutUser({ refreshToken }); } catch (err) {}
-  localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('user');
-  navigate('/login');
-};
+    const refreshToken = localStorage.getItem('refreshToken');
+    try { await logoutUser({ refreshToken }); } catch (err) {}
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    onLogout();
+    navigate('/login');
+  };
 
   return (
     <nav style={s.nav}>
@@ -25,7 +25,7 @@ function Navbar() {
         {user ? (
           <>
             {user.role !== 'admin' && <Link to="/my-rentals" style={s.link}>My Rentals</Link>}
-{user.role === 'admin' && <Link to="/admin" style={s.link}>Admin</Link>}
+            {user.role === 'admin' && <Link to="/admin" style={s.link}>Admin</Link>}
             <span style={s.userBadge}>👤 {user.name}</span>
             <button onClick={logout} style={s.logoutBtn}>Logout</button>
           </>

@@ -14,6 +14,22 @@
   --shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d2e;
+  --surface2: #232640;
+  --gold: #f0c040;
+  --gold2: #e0a800;
+  --text: #eaeaea;
+  --muted: #8888aa;
+  --green: #2ecc71;
+  --red: #e74c3c;
+  --radius: 12px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
